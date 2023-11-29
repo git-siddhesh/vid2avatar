@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from setuptools.command.install import install
 from subprocess import check_call, call
 import os 
-
+import requests
 # add follwing lines to setup.py 
 # %cd /content/pifuhd/
 # !sh ./scripts/download_trained_model.sh
@@ -11,18 +11,44 @@ import os
 class CustomInstallCommand(install):
     def run(self):
         # Run the additional commands after the installation
-        if not os.path.exists("checkpoint_iter_370000.pth"):
-            check_call(["wget", "https://download.01.org/opencv/openvino_training_extensions/models/human_pose_estimation/checkpoint_iter_370000.pth"])
-        else:
-            print("checkpoint_iter_370000.pth already exists")
+        url = "https://download.01.org/opencv/openvino_training_extensions/models/human_pose_estimation/checkpoint_iter_370000.pth"
+        try:
+            if not os.path.exists("checkpoint_iter_370000.pth"):
+                check_call(["wget", url])
+            else:
+                print("checkpoint_iter_370000.pth already exists")
+        except Exception as e:
+            print("Error: in dowlaoding ", e)
+            print("Downloading using request library ...")
+            response = requests.get(url)
+            if response.status_code == 200:
+                with open("checkpoint_iter_370000.pth", 'wb') as file:
+                    file.write(response.content)
+                    print("Download successful using requests library.")
+            else:
+                print(f"Error: Unable to download file. HTTP Status Code: {response.status_code}")
+
+
         # check_call(["sh", "pifuhd/scripts/download_trained_model.sh"])
         # check_call(["set", "-ex"])
         # check_call(["mkdir", "-p", "pifuhd/checkpoints"])
         # check_call(["cd", "pifuhd/checkpoints"])
-        if not os.path.exists("pifuhd.pt"):
-            check_call(["wget", "https://dl.fbaipublicfiles.com/pifuhd/checkpoints/pifuhd.pt", "-O", "pifuhd.pt"])
-        else:
-            print("pifuhd.pt already exists")
+        url2 = "https://dl.fbaipublicfiles.com/pifuhd/checkpoints/pifuhd.pt"
+        try:
+            if not os.path.exists("pifuhd.pt"):
+                check_call(["wget", "https://dl.fbaipublicfiles.com/pifuhd/checkpoints/pifuhd.pt", "-O", "pifuhd.pt"])
+            else:
+                print("pifuhd.pt already exists")
+        except Exception as e:
+            print("Error: in dowlaoding ", e)
+            print("Downloading using request library ...")
+            response = requests.get(url2)
+            if response.status_code == 200:
+                with open("pifuhd.pt", 'wb') as file:
+                    file.write(response.content)
+                    print("Download successful using requests library.")
+            else:
+                print(f"Error: Unable to download file. HTTP Status Code: {response.status_code}")
         # check_call(["cd", ".."])
         # mkdir -p checkpoints
         # cd checkpoints
